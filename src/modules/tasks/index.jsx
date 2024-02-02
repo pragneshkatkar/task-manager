@@ -5,6 +5,9 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { deleteCookie, getCookie, setCookie } from "../../utils/cookies"
 import { DragDropContext } from "react-beautiful-dnd";
+import useToggle from "../../utils/hooks/toggle"
+import Button from "../../components/button"
+import AddTaskPopup from "./partials/add-task-popup";
 
 export default function Tasks() {
 
@@ -32,15 +35,22 @@ export default function Tasks() {
         if (type === "group") {
             let reorderedTasks = [...tasks];
 
-            const taskSourceIndex = source.index;
-            const taskDestinatonIndex = destination.index;
+            let status = "Added"
+            if(destination.droppableId == "2"){
+                status = "Started"
+            } else if(destination.droppableId == "3"){
+                status = "Completed"
+            }
+            const updatedArray = reorderedTasks.map(task => {
+                if (task['id'] === draggableId) {
+                    return { ...task, status: status };
+                }
+                return task;
+            });
+            console.log(updatedArray)
 
-            const [removedTask] = reorderedTasks.splice(taskSourceIndex, 1);
-            reorderedTasks.splice(taskDestinatonIndex, 0, removedTask);
-
-            setTasks(reorderedTasks)
-            deleteCookie("tasks")
-            setCookie("tasks", JSON.stringify(reorderedTasks))
+            setTasks(updatedArray)
+            setCookie("tasks", JSON.stringify(updatedArray))
             return
         }
         const itemSourceIndex = source.index;
@@ -77,21 +87,52 @@ export default function Tasks() {
 
     }
 
+    const {isTrue: isAddTaskPopupShown, setTrue: showAddTaskPopup, setFalse: closeAddTaskPopup} = useToggle()
+
+    const onClickAddTask = () => {
+        showAddTaskPopup()
+    }
+
+    const addTask = (data) => {
+        const taskCount = TASKS.length + 1
+        const newTask = {
+            id: `task-${taskCount}`,
+            name: data.name,
+            tag: data.tag,
+            code: "CN2",
+            status: "Added",
+            srno: taskCount
+        }
+        const newTasks = [...tasks, newTask]
+        setTasks(newTasks)
+        closeAddTaskPopup()
+        setCookie("tasks", JSON.stringify(newTasks))
+    }
+
     return (
-        <DashboardWrapper active="Tasks">
-            <DragDropContext onDragEnd={handleDragAndDrop}>
-                <div className="grid grid-cols-3 gap-x-5">
-                    {
-                        tasks && <TasksColumn id="1" category="Added" tasks={tasks.filter((item) => item.status == "Added")} handleDragAndDrop={handleDragAndDrop} />
-                    }
-                    {
-                        tasks && <TasksColumn id="2" category="Started" tasks={tasks.filter((item) => item.status == "Started")} handleDragAndDrop={handleDragAndDrop} />
-                    }
-                    {
-                        tasks && <TasksColumn id="3" category="Completed" tasks={tasks.filter((item) => item.status == "Completed")} handleDragAndDrop={handleDragAndDrop} />
-                    }
+        <>
+            <DashboardWrapper active="Tasks">
+                <div className="flex items-center py-4">
+                    <Button text="Add new task" attrs={{onClick: onClickAddTask}}/>
                 </div>
-            </DragDropContext>
-        </DashboardWrapper>
+                <DragDropContext onDragEnd={handleDragAndDrop}>
+                    <div className="grid grid-cols-3 gap-x-5">
+                        {
+                            tasks && <TasksColumn id="1" category="Added" tasks={tasks.filter((item) => item.status == "Added").reverse()} handleDragAndDrop={handleDragAndDrop} />
+                        }
+                        {
+                            tasks && <TasksColumn id="2" category="Started" tasks={tasks.filter((item) => item.status == "Started").reverse()} handleDragAndDrop={handleDragAndDrop} />
+                        }
+                        {
+                            tasks && <TasksColumn id="3" category="Completed" tasks={tasks.filter((item) => item.status == "Completed").reverse()} handleDragAndDrop={handleDragAndDrop} />
+                        }
+                    </div>
+                </DragDropContext>
+            </DashboardWrapper>
+
+            {
+                isAddTaskPopupShown && <AddTaskPopup onClose={closeAddTaskPopup} addTask={addTask}/>
+            }
+        </>
     )
 }

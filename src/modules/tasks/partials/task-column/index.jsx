@@ -12,7 +12,7 @@ export default function TasksColumn(props){
                             <p className="text-base text-gray-700 uppercase font-semibold">{category}</p>
                             {
                                 tasks.map((item, key) => (
-                                    <Draggable draggableId={item.id} key={item.id} index={key}>
+                                    <Draggable draggableId={item.id} key={item.id} index={item.srno}>
                                         {
                                             (provided, snapshot) => (
                                                 <div {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
