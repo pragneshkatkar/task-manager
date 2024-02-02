@@ -41,13 +41,20 @@ export default function Tasks() {
             } else if(destination.droppableId == "3"){
                 status = "Completed"
             }
-            const updatedArray = reorderedTasks.map(task => {
+            let updatedArray = reorderedTasks.map(task => {
                 if (task['id'] === draggableId) {
                     return { ...task, status: status };
                 }
                 return task;
             });
-            console.log(updatedArray)
+
+            if(source.droppableId == destination.droppableId){
+                const storeSourceIndex = source.index;
+                const storeDestinatonIndex = destination.index;
+
+                const [removedStore] = updatedArray.splice(storeSourceIndex, 1);
+                updatedArray.splice(storeDestinatonIndex, 0, removedStore);
+            }
 
             setTasks(updatedArray)
             setCookie("tasks", JSON.stringify(updatedArray))
