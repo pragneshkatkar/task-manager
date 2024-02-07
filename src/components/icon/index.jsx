@@ -5,7 +5,7 @@ export default function Icon(props){
     let height = xl ? 40 : 24
     return (
         <div className={`${additionalClasses} flex-shrink-0`}>
-            <img src={`/images/icons/${icon}.svg`} width={width} height={height} alt={icon}/>
+            <img src={`/images/icons/${icon}.png`} width={width} height={height} alt={icon}/>
         </div>
     )
 }
